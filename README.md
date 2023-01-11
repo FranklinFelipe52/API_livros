@@ -16,39 +16,61 @@ Para inicializar o server local, execute o comando:
 | `POST` | '/login' |
 
 + header
+
+
     {
         Content-Type: application/json
     }
 
+
+
 + Request (application/json)
+
+
     {
 	"email": "",
 	"senha": ""
     }
 
+
+
 + response (application/json)
+
+
 
     {
 	"mensagem": "Autenticado com sucesso",
 	"token": ""
-}
+    }
+
+
 
 | Metodo | URL |
 |---|---|
 | `POST` | '/cadastro' |
 
 + header
+
+
     {
         Content-Type: application/json
     }
 
+
+
 + Request (application/json)
+
+
     {
 	"email": "",
 	"senha": ""
     }
 
+
+
 + response (application/json)
+
+
 
     {
 	"mensagem": "usuario criado com sucesso!",
@@ -59,11 +81,15 @@ Para inicializar o server local, execute o comando:
     }
 
 
+
+
 | Metodo | URL |
 |---|---|
 | `GET` | '/livros/all' |
         
 + response (application/json)
+
+
     {
 	"livros": [
 		{
@@ -79,12 +105,16 @@ Para inicializar o server local, execute o comando:
 		}
 	]
     }
+
+
 
 | Metodo | URL |
 |---|---|
 | `GET` | '/livros/{categoria}' |
 
 + response (application/json)
+
+
     {
 	"livros": [
 		{
@@ -100,19 +130,27 @@ Para inicializar o server local, execute o comando:
 		}
 	]
     }
+
+
 
 | Metodo | URL |
 |---|---|
 | `GET` | '/livros/meus-livros' |
 
 + header
+
+
     {
         Content-Type: application/json,
         Authorization: Bearer + token
     }
 
 
+
+
 + response (application/json)
+
+
     {
 	"livros": [
 		{
@@ -128,6 +166,8 @@ Para inicializar o server local, execute o comando:
 		}
 	]
     }
+
+
 | Metodo | URL |
 |---|---|
 | `POST` | '/auth/livros/create' |
@@ -135,12 +175,17 @@ Para inicializar o server local, execute o comando:
 obs: A API só aceita imagens jpeg e png, com no maximo 10mb
 
 + header
+
+
     {
         Content-Type: multipart/form-data,
         Authorization: Bearer + token
     }
 
+
 + Request (multipart/form-data)
+
+
     [
         titulo,
         descrição,
@@ -150,7 +195,10 @@ obs: A API só aceita imagens jpeg e png, com no maximo 10mb
         livro_image(file)
     ]
 
+
+
 + response (application/json)
+
 
     {
 	"mensagem": "livro criado com sucesso!",
