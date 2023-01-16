@@ -1,95 +1,181 @@
 const express = require('express');
-const mysql = require('../../mysql').pool;
+const Livro = require('../models/livros');
 
 
 module.exports = {
     async create(req, res, next){
-        mysql.getConnection((err, conn)=>{
-            if(err){
-                return res.status(500).send({error: err})
+
+        try{
+            const livro = await Livro.create({
+                titulo: req.body.titulo, 
+                categoria: req.body.categoria, 
+                descricao: req.body.descricao, 
+                ano_lancamento: req.body.ano_lancamento, 
+                autor: req.body.autor, 
+                foto: req.file.path,  
+                is_reservado: false, 
+                user_id: req.user.id
+            });
+            if(!livro){
+                return res.status(500).send({mensagem: 'Livro não criado'})
             }
-            conn.query(
-                `INSERT INTO livros (titulo, categoria, descricao, ano_lancamento, autor, foto, isReservado, id_user) VALUES (?,?,?,?,?,?,?,?)`,
-                [req.body.titulo, req.body.categoria, req.body.descricao, req.body.ano_lancamento, req.body.autor, req.file.path,  false,  req.user.id],
-                (error, result)=>{
-                    conn.release();
-                    if(error){return res.status(500).send({error: error })}
 
-                    return res.status(201).send({
-                        mensagem: 'livro criado com sucesso!',
-                        livro: {
-                            id_livro: result.insertId,
-                            titulo: req.body.titulo
-                        }
-                    })
-
+            return res.status(201).send({
+                mensagem: 'Livro criado com sucesso!',
+                livro: {
+                    titulo: livro.titulo,
+                    categoria: livro.categoria
                 }
-                )
-        })
+            })
+
+        } catch (err){
+            res.status(500).send({error: err})
+        }
     },
     async read(req, res, next){
-        mysql.getConnection((err, conn)=>{
-            if(err){
-                return res.status(500).send({error: err})
+
+        try{
+            const livros = await Livro.findAll({include: {association: 'mensagens'}});
+
+            if(!livros){
+                return res.status(500).send({mensagem: 'Erro no retorno dos livros'})
             }
-            conn.query(
-                `SELECT * FROM livros`,
-                (error, result)=>{
-                    conn.release();
-                    if(error){return res.status(500).send({error: error })}
 
-                    return res.status(201).send({
-                      livros: result
-                    })
+            return res.status(201).send({
+                livros: livros
+            })
 
-                }
-                )
-        })
-
-
+        } catch (err){
+            res.status(500).send({error: err})
+        }
 
     },
     async CategoryFilterRead(req, res, next){
-        mysql.getConnection((err, conn)=>{
-            if(err){
-                return res.status(500).send({error: err})
+
+        try{
+            const livros = await Livro.findAll({
+                where: { categoria: req.params.categoria},
+                include: {association: 'mensagens'}
+            });
+
+            if(!livros){
+                return res.status(500).send({mensagem: 'Erro no retorno dos livros'})
             }
-            conn.query(
-                `SELECT * FROM livros WHERE categoria = ?`,
-                [req.params.categoria],
-                (error, result)=>{
-                    conn.release();
-                    if(error){return res.status(500).send({error: error })}
 
-                    return res.status(201).send({
-                      livros: result
-                    })
+            return res.status(201).send({
+                livros: livros
+            })
 
-                }
-                )
-        })
-
+        } catch (err){
+            res.status(500).send({error: err})
+        }
 
     },
     async myRead(req, res, next){
-        mysql.getConnection((err, conn)=>{
-            if(err){
-                return res.status(500).send({error: err})
+        try{
+            const livros = await Livro.findAll({
+                where: { user_id: req.user.id},
+                include: {association: 'mensagens'}
+            });
+
+            if(!livros){
+                return res.status(500).send({mensagem: 'Erro no retorno dos livros'})
             }
-            conn.query(
-                `SELECT * FROM livros WHERE id_user = ?`,
-                [req.user.id],
-                (error, result)=>{
-                    conn.release();
-                    if(error){return res.status(500).send({error: error })}
 
-                    return res.status(201).send({
-                      livros: result
-                    })
+            return res.status(201).send({
+                livros: livros
+            })
 
-                }
-                )
-        })
+        } catch (err){
+            res.status(500).send({error: err})
+        }
 
+    },
+    async delete(req, res, next){
+        try{
+            const livro = await Livro.findOne({
+                where: { id: req.params.livro_id},
+            });
+            if(!livro){
+                return res.status(500).send({mensagem: 'Erro ao encontrar o livro, verifique os dados'})
+            }
+            if(livro.user_id === req.user.id){
+                await livro.destroy();
+                return res.status(201).send({
+                    mensagem: 'Livro deletado!'
+                })
+            } else {
+                return res.status(401).send({
+                    mensagem: 'Operação não autorizada!'
+                })
+            }
+
+        } catch (err){
+            res.status(500).send({error: err})
+        }
+    },
+    async update(req, res, next){
+        try{
+            const livro = await Livro.findOne({
+                where: { id: req.params.livro_id},
+            });
+            if(!livro){
+                return res.status(500).send({mensagem: 'Erro ao encontrar o livro, verifique os dados'})
+            }
+            if(livro.user_id === req.user.id){
+                await Livro.update({
+                    titulo: req.body.titulo, 
+                    categoria: req.body.categoria, 
+                    descricao: req.body.descricao, 
+                    ano_lancamento: req.body.ano_lancamento, 
+                    autor: req.body.autor, 
+                    foto: req.file.path,  
+                }, {
+                    where: {
+                        id: req.params.livro_id
+                    }
+                  });
+                return res.status(201).send({
+                    mensagem: 'Livro editado!'
+                })
+            } else {
+                return res.status(401).send({
+                    mensagem: 'Operação não autorizada!'
+                })
+            }
+
+        } catch (err){
+            res.status(500).send({error: err})
+        }
+    },
+    async IsReservado(req, res, next){
+        try{
+            const livro = await Livro.findOne({
+                where: { id: req.params.livro_id},
+            });
+            if(!livro){
+                return res.status(500).send({mensagem: 'Erro ao encontrar o livro, verifique os dados'})
+            }
+            if((livro.user_id === req.user.id) && (req.params.is_reservado == 0 || req.params.is_reservado == 1)){
+                await Livro.update({
+                    is_reservado: req.params.is_reservado == 0 ? false : true,
+                     
+                }, {
+                    where: {
+                        id: req.params.livro_id
+                    }
+                  });
+                return res.status(201).send({
+                    mensagem: 'Livro editado!'
+                })
+            } else {
+                return res.status(401).send({
+                    mensagem: 'Operação não autorizada!'
+                })
+            }
+
+        } catch (err){
+            res.status(500).send({error: err})
+        }
     }
 }

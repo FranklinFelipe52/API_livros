@@ -1,23 +1,43 @@
-const { Sequelize, DataTypes, Model } = require('sequelize');
-const sequelize = new Sequelize('sqlite::memory:');
+'use strict';
+const {
+  Model,
+  DataTypes
+} = require('sequelize');
 
-class User extends Model {}
 
-User.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
+
+  class User extends Model {
+   static init(sequelize){
+    super.init({
+      nome: {
+        type: DataTypes.STRING,
+       
+      },
+      sobrenome: {
+        type: DataTypes.STRING,
+       
+      },
+      tel: {
+        type: DataTypes.STRING,
+       
+      },
+      senha: {
+        type: DataTypes.STRING,
+        
+      },
+      email: {
+        type: DataTypes.STRING,
+      },
+    }, {
+      sequelize,
+      modelName: 'User',
+      timestamps: true
+    });
+   }
+    static associate(models) {
+      this.hasMany(models.Livro, { foreignKey: 'user_id', as: 'livros'});
+      this.hasMany(models.Mensagem, { foreignKey: 'user_id', as: 'mensagens'});
+    }
   }
-}, {
-  // Other model options go here
-  sequelize, // We need to pass the connection instance
-  modelName: 'User', // We need to choose the model name
-  timestamps: true
-});
 
-module.exports = User;
+  module.exports = User;

@@ -6,6 +6,8 @@ const morgan = require('morgan');
 
 const bodyParser = require('body-parser');
 
+require('./src/database');
+
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: false}));
