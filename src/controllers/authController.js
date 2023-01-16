@@ -25,7 +25,7 @@ module.exports = {
                         nome:  userVerify.nome,
                         sobrenome:  userVerify.sobrenome,
                         tel:  userVerify.tel
-                    }, 'segredo', {
+                    },  process.env.JWT_KEY, {
                         expiresIn: '7d'
                     })
                     return res.status(200).send({
