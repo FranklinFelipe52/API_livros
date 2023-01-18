@@ -3,10 +3,22 @@ const app = express();
 const routePublic = require('./src/routes/public');
 const routeAuth = require('./src/routes/auth');
 const morgan = require('morgan');
+const connection = require('./src/database');
+const User = require('./src/models/user');
+const Livro = require('./src/models/livros');
+const Mensagem = require('./src/models/mensagens');
 
 const bodyParser = require('body-parser');
 
-require('./src/database');
+connection.sync().then(()=> console.log('banco conectado!'));
+
+User.init(connection);
+Livro.init(connection);
+Mensagem.init(connection);
+User.associate(connection.models);
+Livro.associate(connection.models);
+Mensagem.associate(connection.models);
+
 
 
 app.use(morgan('dev'));
